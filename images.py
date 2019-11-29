@@ -6,6 +6,7 @@ import shutil
 import pickle
 
 
+# files formats
 def img_format():
     return ('.JPG', '.jpg', '.jpeg', '.JPEG', '.BMP', '.bmp', '.PNG', '.png')
 
@@ -14,6 +15,7 @@ def vid_format():
     pass
 
 
+# all files paths
 def paths(folder_name='2016', main_path='E:\gallery\django_project\\blog\static\Zdjecia'):
     ctx = {
         'main_path': main_path,
@@ -23,6 +25,7 @@ def paths(folder_name='2016', main_path='E:\gallery\django_project\\blog\static\
     return ctx
 
 
+# get file info from title (date, time)
 def file_info(file):
     ctx = {
         'full_path': f"{paths()['folder_path']}\\{file}",
@@ -42,6 +45,7 @@ print(f"Images: {len(img_files)}")
 files_info = paths()['folder_name'] + '.txt'
 
 
+# save everything to JSON file
 def files_to_json():
     with open(files_info, 'w') as f:
         photos = [file_info(img) for img in img_files if len(img) > 20]
@@ -49,22 +53,20 @@ def files_to_json():
         json.dump({'photos': photos, 'nonames': nonames}, f, indent=4)
 
 
-
-# access file and make link to image
+# access files details from JSON file
 with open(files_info) as f:
     link_list = json.load(f)
     print(link_list['photos'][1])
 
 
-
-
-
+# test
 def test_random():
-    files_to_json() # map folder
+    files_to_json()  # map folder
     x = link_list['photos'][random.randint(10, 50)]
     print(x['month'], x['day'], x['time'])
 
     img = Image.open(x['full_path'])
     img.show()
+
 
 test_random()
