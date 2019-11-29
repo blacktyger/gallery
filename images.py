@@ -1,4 +1,5 @@
 import os
+import json
 import random
 from PIL import Image
 import shutil
@@ -14,46 +15,56 @@ def vid_format():
 
 
 def paths(folder_name='2016', main_path='E:\gallery\django_project\\blog\static\Zdjecia'):
-    main_path = main_path
-    folder_name = folder_name
-    folder_path = main_path + '\\' + folder_name
-    return [main_path, folder_path, folder_name]
+    ctx = {
+        'main_path': main_path,
+        'folder_name': folder_name,
+        'folder_path': main_path + '\\' + folder_name,
+    }
+    return ctx
 
 
 def file_info(file):
-    year = str(file.split('_')[1][:4])
-    month = str(file.split('_')[1][4:6])
-    day = str(file.split('_')[1][-2:])
-    time = f"{str(file.split('_')[2][:2])}:{str(file.split('_')[2][2:4])}"
-    return [file, year, month, day, time]
+    ctx = {
+        'full_path': f"{paths()['folder_path']}\\{file}",
+        'year': str(file.split('_')[1][:4]),
+        'month': str(file.split('_')[1][4:6]),
+        'day': str(file.split('_')[1][-2:]),
+        'time': f"{str(file.split('_')[2][:2])}:{str(file.split('_')[2][2:4])}",
+    }
+    return ctx
 
 
 # make list of all files in folder
-img_files = [img for img in os.listdir(paths()[1]) if img.endswith(img_format())]
-print(f"All files in {paths()[2]}: {len(os.listdir(paths()[1]))}")
+img_files = [img for img in os.listdir(paths()['folder_path']) if img.endswith(img_format())]
+print(f"All files in {paths()['folder_name']}: {len(os.listdir(paths()['folder_path']))}")
 print(f"Images: {len(img_files)}")
 
+files_info = paths()['folder_name'] + '.txt'
 
-# list of img's to file
-files_info = paths()[2] + '.txt'
-with open(files_info, 'w') as f:
-    for img in img_files:
-        if len(img) > 20:
-            f.write(str(file_info(img)) + "\n")
-        else:
-            f.write(str([img]) + "\n")
+
+def files_to_json():
+    with open(files_info, 'w') as f:
+        photos = [file_info(img) for img in img_files if len(img) > 20]
+        nonames = [img for img in img_files if len(img) < 15]
+        json.dump({'photos': photos, 'nonames': nonames}, f, indent=4)
+
+
 
 # access file and make link to image
-with open(files_info, "r") as f:
-    link_list = [paths()[1] + '\\' + str(line.strip().split("'")[1]) for line in f]
+with open(files_info) as f:
+    link_list = json.load(f)
+    print(link_list['photos'][1])
+
+
 
 
 
 def test_random():
-    x = random.choice(link_list)
-    print(x)
-    img = Image.open(x)
+    files_to_json() # map folder
+    x = link_list['photos'][random.randint(10, 50)]
+    print(x['month'], x['day'], x['time'])
+
+    img = Image.open(x['full_path'])
     img.show()
 
 test_random()
-
